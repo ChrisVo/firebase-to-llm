@@ -1,6 +1,13 @@
-# Firebase to LLM Data Dump Tool
+# Firebase to LLM Data Sampler
 
-A Python script to dump Firestore database contents recursively, making it easy to export data for analysis or LLM training purposes.
+A Python tool that helps you sample real data from your Firestore collections to use as test data when developing and testing LLM applications. With modern LLMs supporting large context windows, using real production data samples can significantly improve your testing and development process.
+
+## Why Use Real Data for LLM Testing?
+
+- **Better Testing**: Real-world data patterns help catch edge cases
+- **Improved Prompting**: Develop more accurate prompt templates using actual data structures
+- **Schema Understanding**: Help LLMs better understand your data models
+- **Context Window Utilization**: Modern LLMs can handle large amounts of context - why not use it?
 
 ## Prerequisites
 
@@ -28,7 +35,7 @@ pip install firebase-admin
 
 ## Usage
 
-Basic usage:
+Basic usage to sample your data:
 
 ```bash
 python firebase-to-llm.py path/to/your/serviceAccountKey.json
@@ -37,7 +44,7 @@ python firebase-to-llm.py path/to/your/serviceAccountKey.json
 With optional parameters:
 
 ```bash
-python firebase-to-llm.py path/to/your/serviceAccountKey.json --project-id your-project-id --max-depth 5
+python firebase-to-llm.py path/to/your/serviceAccountKey.json --project-id your-project-id --max-depth 5 --sample-size 10
 ```
 
 ### Command Line Arguments
@@ -45,22 +52,23 @@ python firebase-to-llm.py path/to/your/serviceAccountKey.json --project-id your-
 - `key_file`: (Required) Path to your Firebase Admin SDK service account key file (JSON)
 - `--project-id`: (Optional) Firebase Project ID (usually inferred from key file)
 - `--max-depth`: (Optional) Maximum recursion depth for subcollections (default: 10)
+- `--sample-size`: (Optional) Number of documents to sample per collection (default: all)
 
 ## Output Format
 
-The script outputs data in a hierarchical format:
+The script outputs sampled data in a hierarchical format that's easy to include in LLM prompts:
 
 - Top-level collections are listed first
 - For each collection:
-  - Documents are displayed with their IDs
-  - Document data is shown in JSON format
-  - Subcollections (if any) are recursively displayed
+  - A sample of documents with their IDs
+  - Document data in JSON format
+  - Nested subcollections (if any) are recursively sampled
   - Timestamps are converted to ISO 8601 format
 
 Example output:
 
 ```
---- Processing Collection: users ---
+--- Collection: users (Sample) ---
   --- Document: user123 ---
   {
     "name": "John Doe",
@@ -69,15 +77,25 @@ Example output:
   }
 ```
 
-## Error Handling
+## Using the Output with LLMs
 
-The script handles several common scenarios:
+### Example Prompt Template
 
-- Circular references in documents (warns and continues)
-- Invalid credentials
-- Missing permissions
-- Network issues
-- Empty collections
+```
+Given this sample of my Firestore data structure:
+
+{paste_output_here}
+
+[Your task-specific prompt...]
+```
+
+### Common Use Cases
+
+1. **Schema Analysis**: Ask LLMs to analyze your data structure
+2. **Query Generation**: Test query generation against real data patterns
+3. **Data Validation**: Develop validation rules based on actual data
+4. **Documentation**: Generate documentation from real examples
+5. **Edge Case Discovery**: Find unusual patterns in your data
 
 ## Security Considerations
 
@@ -85,6 +103,7 @@ The script handles several common scenarios:
 2. Store the key file securely
 3. Use appropriate Firebase Security Rules
 4. Be aware of read quotas and billing implications
+5. Consider sampling or anonymizing sensitive data
 
 ## Limitations
 
